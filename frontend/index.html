@@ -1425,8 +1425,8 @@ function buildRcmAr() {
 try { initChartsFor('overview'); } catch(e) { console.error('[init] overview charts failed:', e); }
 
 // ── CALLS PAGE ────────────────────────────────────────────────────
-const CALLS_DATA_URL    = 'https://lenity-stratus-state.s3.us-west-2.amazonaws.com/stratus/dashboard/calls_data.json';
-const CALLS_SUMMARY_URL = 'https://lenity-stratus-state.s3.us-west-2.amazonaws.com/stratus/dashboard/calls_summary.json';
+const CALLS_DATA_URL    = 'data/calls_data.json';
+const CALLS_SUMMARY_URL = 'data/calls_summary.json';
 const NC_LIST_BASE_URL  = 'https://api.lenity.health/nc-list'; // Lambda endpoint — set after deploy
 
 let CALLS_SUMMARY = null;

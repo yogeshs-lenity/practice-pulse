@@ -167,13 +167,10 @@ def process(path):
 
 # ── Upload helpers ────────────────────────────────────────────────
 
-def upload(s3, body, key, public=False):
-    kwargs = dict(Bucket=S3_BUCKET, Key=key, Body=body,
+def upload_private(s3, body, key):
+    s3.put_object(Bucket=S3_BUCKET, Key=key, Body=body,
                   ContentType='application/json')
-    if public:
-        kwargs['ACL'] = 'public-read'
-    s3.put_object(**kwargs)
-    print(f'  uploaded → s3://{S3_BUCKET}/{key}' + (' [public]' if public else ' [private]'))
+    print(f'  uploaded → s3://{S3_BUCKET}/{key} [private]')
 
 # ── Main ─────────────────────────────────────────────────────────
 
@@ -189,20 +186,23 @@ def main():
     data, summary, nc_by_date = process(tmp_path)
     print(f'  {summary["days"]} business days  |  {summary["total"]} inbound  |  {summary["nc"]} NC  |  {summary["ob_total"]} outbound')
 
-    # Public: aggregated data (no PHI)
-    public_data = json.dumps(data, separators=(',', ':'))
-    upload(s3, public_data, f'{S3_DASH_PREFIX}/calls_data.json', public=True)
+    # Write public JSON (no PHI) to frontend/data/ for GitHub Pages
+    repo_root = Path(__file__).parent.parent
+    data_dir  = repo_root / 'frontend' / 'data'
+    data_dir.mkdir(parents=True, exist_ok=True)
 
-    public_summary = json.dumps(summary, separators=(',', ':'))
-    upload(s3, public_summary, f'{S3_DASH_PREFIX}/calls_summary.json', public=True)
+    (data_dir / 'calls_data.json').write_text(json.dumps(data, separators=(',', ':')))
+    print(f'  wrote → frontend/data/calls_data.json')
 
-    # Private: per-date NC lists (contain phone numbers / names)
+    (data_dir / 'calls_summary.json').write_text(json.dumps(summary, separators=(',', ':')))
+    print(f'  wrote → frontend/data/calls_summary.json')
+
+    # Private: per-date NC lists (contain phone numbers / names) → S3 only
     for ds, nc_list in nc_by_date.items():
         body = json.dumps(nc_list, separators=(',', ':'))
-        upload(s3, body, f'{S3_DASH_PREFIX}/nc/nc_{ds}.json', public=False)
+        upload_private(s3, body, f'{S3_DASH_PREFIX}/nc/nc_{ds}.json')
 
-    print(f'\nDone. Public data URL:')
-    print(f'  https://{S3_BUCKET}.s3.{REGION}.amazonaws.com/{S3_DASH_PREFIX}/calls_data.json')
+    print(f'\nNext: git add frontend/data/ && git commit -m "data: refresh call analytics" && git push')
     os.unlink(tmp_path)
 
 if __name__ == '__main__':
