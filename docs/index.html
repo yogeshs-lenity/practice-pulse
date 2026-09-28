@@ -1091,8 +1091,7 @@ function navigate(pageId) {
   const m = PAGE_META[pageId]||{};
   document.getElementById('hdr-title').textContent = m.title||pageId;
   document.getElementById('hdr-sub').textContent   = m.sub||'';
-  initChartsFor(pageId);
-  // Re-render calls on return visits after first init
+  try { initChartsFor(pageId); } catch(e) { console.error('[navigate] chart init failed for', pageId, e); }
   if (pageId === 'calls' && _callsBuilt) {
     renderCallsForDate(_callsActiveDate);
   }
@@ -1190,7 +1189,12 @@ function initChartsFor(id) {
     health:       ()=>{},
     calls:        buildCalls,
   };
-  builders[id]?.();
+  try {
+    builders[id]?.();
+  } catch(e) {
+    _inited.delete(id);
+    throw e;
+  }
 }
 
 // ── Overview charts ───────────────────────────────────────────────
@@ -1232,7 +1236,7 @@ function buildOverview() {
     scales:{
       x:{ticks:{maxRotation:0,font:{size:9},callback:(_,i)=>(i%7===2)?DAYS[i]:''},grid:{display:false}},
       y:{stacked:true,ticks:{font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'},beginAtZero:true},
-      _x:{stacked:true}
+      x:{stacked:true}
     },
     plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: $${c.parsed.y.toLocaleString()}`}},
       legend:{display:true,position:'top',labels:{font:{size:11},usePointStyle:true,pointStyleWidth:8}}}
