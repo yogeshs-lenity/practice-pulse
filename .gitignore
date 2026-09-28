@@ -1,0 +1,10 @@
+data/
+logs/
+*.csv
+*.xlsx
+*.xls
+*.env
+.env*
+__pycache__/
+*.pyc
+.DS_Store

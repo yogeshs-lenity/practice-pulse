@@ -1,0 +1,1659 @@
+<title>Practice Pulse</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:           #F0F4F8;
+  --surface:      #FFFFFF;
+  --sidebar:      #0F172A;
+  --sidebar-mid:  #111827;
+  --text-1:       #0F172A;
+  --text-2:       #475569;
+  --text-3:       #94A3B8;
+  --border:       #E2E8F0;
+  --accent:       #4F46E5;
+  --accent-dim:   #EEF2FF;
+  --accent-border:#C7D2FE;
+  --green:        #059669;
+  --green-dim:    #ECFDF5;
+  --amber:        #D97706;
+  --amber-dim:    #FFFBEB;
+  --red:          #DC2626;
+  --red-dim:      #FEF2F2;
+  --purple:       #7C3AED;
+  --teal:         #0F766E;
+  --sh:           0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh-md:        0 4px 6px -1px rgba(0,0,0,.08),0 2px 4px -2px rgba(0,0,0,.05);
+  --r:            10px;
+  --sidebar-w:    224px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --surface: #1E293B; --border: #334155;
+    --text-1: #F1F5F9; --text-2: #94A3B8; --text-3: #64748B;
+    --accent-dim: #1E1B4B; --accent-border: #3730A3;
+    --green-dim: #022C22; --amber-dim: #431407; --red-dim: #450A0A;
+    --sh: 0 1px 3px rgba(0,0,0,.3); --sh-md: 0 4px 6px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --surface: #1E293B; --border: #334155;
+  --text-1: #F1F5F9; --text-2: #94A3B8; --text-3: #64748B;
+  --accent-dim: #1E1B4B; --accent-border: #3730A3;
+  --green-dim: #022C22; --amber-dim: #431407; --red-dim: #450A0A;
+  --sh: 0 1px 3px rgba(0,0,0,.3); --sh-md: 0 4px 6px rgba(0,0,0,.4);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-1);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* ── Layout ──────────────────────────────────────────────────── */
+#app{display:flex;min-height:100vh}
+#sidebar{width:var(--sidebar-w);background:linear-gradient(180deg,var(--sidebar) 0%,var(--sidebar-mid) 100%);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+#main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+.brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.brand-mark{display:flex;align-items:center;gap:8px}
+.brand-dot{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;letter-spacing:-.5px;flex-shrink:0}
+.brand-name{font-size:14px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.brand-org{font-size:10.5px;color:#475569;margin-top:5px}
+
+.nav-group{padding:10px 0 2px}
+.nav-label{font-size:9.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#334155;padding:0 18px 6px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 18px;cursor:pointer;color:#64748B;font-size:13px;font-weight:500;border-left:2px solid transparent;transition:all .12s;user-select:none}
+.nav-item:hover{color:#CBD5E1;background:rgba(255,255,255,.04)}
+.nav-item.active{color:#F1F5F9;background:rgba(79,70,229,.14);border-left-color:var(--accent)}
+.nav-icon{width:15px;height:15px;flex-shrink:0;opacity:.6}
+.nav-item.active .nav-icon{opacity:1}
+
+.sidebar-footer{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.05)}
+.sidebar-footer-text{font-size:10.5px;color:#334155}
+
+/* ── Header ──────────────────────────────────────────────────── */
+#header{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:var(--sh)}
+.page-title{font-size:15px;font-weight:700;color:var(--text-1);letter-spacing:-.3px}
+.page-subtitle{font-size:12px;color:var(--text-3);margin-top:1px}
+.header-right{display:flex;align-items:center;gap:10px}
+.chip{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.chip-accent{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border)}
+.chip-gray{background:var(--bg);color:var(--text-2);border:1px solid var(--border)}
+
+/* ── Pages ───────────────────────────────────────────────────── */
+.page{display:none;padding:24px 28px 48px;animation:fadein .18s ease}
+.page.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ── KPI grids ───────────────────────────────────────────────── */
+.kpi-row{display:grid;gap:13px;margin-bottom:16px}
+.kpi-4{grid-template-columns:repeat(4,1fr)}
+.kpi-3{grid-template-columns:repeat(3,1fr)}
+.kpi-6{grid-template-columns:repeat(6,1fr)}
+.kpi-card{background:var(--surface);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);border:1px solid var(--border)}
+.kpi-card.accent-left{border-left:3px solid var(--accent)}
+.kpi-card.green-left{border-left:3px solid var(--green)}
+.kpi-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:5px}
+.kpi-value{font-size:28px;font-weight:800;color:var(--text-1);letter-spacing:-.8px;line-height:1;font-variant-numeric:tabular-nums}
+.kpi-value.sm{font-size:22px;letter-spacing:-.5px}
+.kpi-value.xs{font-size:18px;letter-spacing:-.3px}
+.kpi-context{font-size:11.5px;color:var(--text-2);margin-top:5px}
+.kpi-tag{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;margin-top:4px}
+.tag-green{background:var(--green-dim);color:var(--green)}
+.tag-amber{background:var(--amber-dim);color:var(--amber)}
+.tag-red{background:var(--red-dim);color:var(--red)}
+.tag-blue{background:var(--accent-dim);color:var(--accent)}
+.tag-gray{background:var(--border);color:var(--text-2)}
+
+/* ── Grid helpers ────────────────────────────────────────────── */
+.row{display:grid;gap:13px;margin-bottom:16px}
+.r-2{grid-template-columns:1fr 1fr}
+.r-3{grid-template-columns:1fr 1fr 1fr}
+.r-31{grid-template-columns:2fr 1fr}
+.r-13{grid-template-columns:1fr 2fr}
+
+/* ── Chart cards ─────────────────────────────────────────────── */
+.card{background:var(--surface);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh);border:1px solid var(--border)}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:600;color:var(--text-1)}
+.card-sub{font-size:11.5px;color:var(--text-3);margin-top:2px}
+.chart-wrap{position:relative}
+
+/* ── Section labels ──────────────────────────────────────────── */
+.section-label{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:10px;margin-top:4px}
+
+/* ── Toggle buttons ──────────────────────────────────────────── */
+.toggle{display:flex;background:var(--bg);border-radius:6px;padding:2px;gap:2px;border:1px solid var(--border)}
+.toggle-btn{font-size:11.5px;font-weight:600;color:var(--text-2);padding:4px 10px;border-radius:4px;cursor:pointer;border:none;background:none;transition:all .12s}
+.toggle-btn.on{background:var(--surface);color:var(--accent);box-shadow:var(--sh)}
+
+/* ── Needs Attention ─────────────────────────────────────────── */
+.attn-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:0}
+.attn-card{background:var(--surface);border-radius:var(--r);padding:14px 16px;border:1px solid var(--border);cursor:pointer;transition:box-shadow .14s,border-color .14s;box-shadow:var(--sh)}
+.attn-card:hover{box-shadow:var(--sh-md);border-color:var(--accent)}
+.attn-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.attn-arrow{font-size:14px;color:var(--text-3)}
+.attn-value{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1.1;font-variant-numeric:tabular-nums}
+.attn-meta{font-size:11px;color:var(--text-2);margin-top:4px}
+.col-amber{color:var(--amber)}.col-red{color:var(--red)}.col-blue{color:var(--accent)}.col-green{color:var(--green)}.col-purple{color:var(--purple)}
+
+/* ── Tabs ────────────────────────────────────────────────────── */
+.tab-bar{display:flex;border-bottom:2px solid var(--border);margin-bottom:20px}
+.tab-btn{font-size:13px;font-weight:600;padding:8px 18px;cursor:pointer;color:var(--text-2);border-bottom:2px solid transparent;margin-bottom:-2px;background:none;border-top:none;border-left:none;border-right:none;transition:all .12s}
+.tab-btn:hover{color:var(--text-1)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── Tables ──────────────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-3);text-align:left;padding:8px 12px;border-bottom:2px solid var(--border);white-space:nowrap}
+th.r{text-align:right}
+td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-1);vertical-align:middle}
+td.r{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--bg)}
+
+/* ── Badges ──────────────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.b-green{background:var(--green-dim);color:#047857}
+.b-amber{background:var(--amber-dim);color:#B45309}
+.b-red{background:var(--red-dim);color:#B91C1C}
+.b-blue{background:var(--accent-dim);color:var(--accent)}
+.b-gray{background:var(--border);color:var(--text-2)}
+.b-purple{background:#F3F0FF;color:var(--purple)}
+
+/* ── Age dot ─────────────────────────────────────────────────── */
+.adot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;flex-shrink:0}
+.adot-low{background:var(--green)}.adot-med{background:var(--amber)}.adot-hi{background:#EA580C}.adot-crit{background:var(--red)}
+
+/* ── Funnel ──────────────────────────────────────────────────── */
+.funnel{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:0;margin-bottom:20px}
+.funnel-step{background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:8px;padding:14px 12px;text-align:center}
+.funnel-arrow{font-size:18px;color:var(--text-3);text-align:center;padding:0 4px}
+.funnel-num{font-size:24px;font-weight:800;color:var(--accent);letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.funnel-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);margin-bottom:3px}
+.funnel-sub{font-size:10.5px;color:var(--text-2);margin-top:3px}
+
+/* ── A/R bars ────────────────────────────────────────────────── */
+.ar-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.ar-bar-lbl{width:54px;font-size:11.5px;color:var(--text-2);text-align:right;flex-shrink:0;font-weight:500}
+.ar-bar-track{flex:1;height:22px;background:var(--bg);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.ar-bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:8px;min-width:40px}
+.ar-bar-txt{font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
+.ar-bar-amt{width:90px;font-size:12px;font-weight:700;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;color:var(--text-1)}
+
+/* ── Data health ─────────────────────────────────────────────── */
+.val-ok{color:var(--green);font-weight:700;font-size:11.5px}
+.val-inf{color:var(--amber);font-weight:700;font-size:11.5px}
+.val-snap{color:var(--accent);font-weight:700;font-size:11.5px}
+.val-miss{color:var(--red);font-weight:700;font-size:11.5px}
+.check{color:var(--green)}
+
+/* ── Banner ──────────────────────────────────────────────────── */
+.banner{background:var(--amber-dim);border:1px solid #FDE68A;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12.5px;color:#92400E}
+.banner strong{font-weight:700}
+
+/* ── Filter bar ──────────────────────────────────────────────── */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-bar label{font-size:11.5px;font-weight:600;color:var(--text-2)}
+.filter-bar select{font-size:12px;color:var(--text-1);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-family:inherit;cursor:pointer}
+.filter-bar input{font-size:12px;color:var(--text-1);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-family:inherit;width:160px}
+
+/* ── Lag KPIs ────────────────────────────────────────────────── */
+.lag-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.lag-card{background:var(--bg);border-radius:8px;padding:12px 14px;border:1px solid var(--border)}
+.lag-lbl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-3);margin-bottom:4px}
+.lag-val{font-size:20px;font-weight:800;color:var(--text-1);letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.lag-unit{font-size:11px;color:var(--text-2);margin-top:2px}
+
+/* ── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+
+<div id="app">
+
+<!-- ── SIDEBAR ─────────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="brand">
+    <div class="brand-mark">
+      <div class="brand-dot">P</div>
+      <div class="brand-name">Practice Pulse</div>
+    </div>
+    <div class="brand-org">Karandeep Singh MD · Lenity Health</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">Dashboard</div>
+    <div class="nav-item active" data-page="overview">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+      Overview
+    </div>
+    <div class="nav-item" data-page="activity">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></svg>
+      Practice Activity
+    </div>
+    <div class="nav-item" data-page="production">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 12l4-5 3 3 3-4 4 6H1z"/></svg>
+      Production
+    </div>
+    <div class="nav-item" data-page="billing">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 6h14M5 10h2m3 0h2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+      Billing &amp; Cash
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">Operations</div>
+    <div class="nav-item" data-page="rcm">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L1 5v6l7 4 7-4V5L8 1zm0 1.8l5 2.9v4.6L8 13.2 3 10.3V5.7L8 2.8z"/></svg>
+      RCM Control Tower
+    </div>
+    <div class="nav-item" data-page="health">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-.5 10.5V8H6V6.5h3v5H7.5zm0-7.5a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"/></svg>
+      Data Health
+    </div>
+    <div class="nav-item" data-page="calls">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 1A1.5 1.5 0 002 2.5v1.086c0 4.973 3.48 9.121 8.277 10.147l.223.047A1.5 1.5 0 0012 12.314V10.5a.5.5 0 00-.276-.447l-2-.999a.5.5 0 00-.632.21l-.5.875a7.504 7.504 0 01-3.231-3.23l.875-.5a.5.5 0 00.21-.633l-1-.999A.5.5 0 005 5H3.5z"/></svg>
+      Call Analytics
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-text">Stage 1 prototype · July 2026</div>
+  </div>
+</nav>
+
+<!-- ── MAIN ────────────────────────────────────────────────────── -->
+<div id="main">
+
+<!-- Header -->
+<header id="header">
+  <div>
+    <div class="page-title" id="hdr-title">Overview</div>
+    <div class="page-subtitle" id="hdr-sub">How are we doing at a glance?</div>
+  </div>
+  <div class="header-right">
+    <span class="chip chip-accent">July 2026</span>
+    <span class="chip chip-gray">Lenity Health</span>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- PAGE: OVERVIEW                                                -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="page-overview" class="page active">
+
+  <div class="kpi-row kpi-4">
+    <div class="kpi-card accent-left">
+      <div class="kpi-label">Billed CPT Units</div>
+      <div class="kpi-value">3,171</div>
+      <div class="kpi-context">July 2026 · source: 37.08</div>
+    </div>
+    <div class="kpi-card accent-left">
+      <div class="kpi-label">Billed Charges</div>
+      <div class="kpi-value">$821,983</div>
+      <div class="kpi-context">Payer $800,231 · Self $21,752</div>
+    </div>
+    <div class="kpi-card green-left">
+      <div class="kpi-label">Cash Received</div>
+      <div class="kpi-value">$279,792</div>
+      <div class="kpi-context">Payer $268,936 · Patient $10,856</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">No-Shows</div>
+      <div class="kpi-value">73</div>
+      <div class="kpi-context">of 1,505 encounters · 4.6%</div>
+      <div class="kpi-tag tag-amber">Watch</div>
+    </div>
+  </div>
+
+  <div class="kpi-row kpi-4">
+    <div class="kpi-card">
+      <div class="kpi-label">Completed Encounters</div>
+      <div class="kpi-value sm">1,505</div>
+      <div class="kpi-context">1,058 unique patients</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Unique Patients</div>
+      <div class="kpi-value sm">1,058</div>
+      <div class="kpi-context">Seen at least once in July</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Claim Submission Events</div>
+      <div class="kpi-value sm">3,079</div>
+      <div class="kpi-context">Includes resubmissions</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Charges Submitted</div>
+      <div class="kpi-value sm">$1,108,498</div>
+      <div class="kpi-context">Cumulative submissions</div>
+    </div>
+  </div>
+
+  <div class="row r-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-head">
+        <div><div class="card-title">Activity</div><div class="card-sub">Completed encounters + no-shows · July 2026</div></div>
+      </div>
+      <div class="chart-wrap"><canvas id="ch-ov-activity" height="140"></canvas></div>
+    </div>
+    <div class="row" style="display:grid;grid-template-rows:1fr 1fr;gap:13px;margin-bottom:0">
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">Production</div><div class="card-sub">CPT units by day</div></div>
+          <div class="toggle" id="toggle-prod">
+            <button class="toggle-btn on" data-val="units">Units</button>
+            <button class="toggle-btn" data-val="charges">Charges</button>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="ch-ov-prod" height="90"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">Cash</div><div class="card-sub">Payer + patient · by day</div></div>
+        </div>
+        <div class="chart-wrap"><canvas id="ch-ov-cash" height="90"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Needs Attention → RCM Control Tower</div>
+  <div class="attn-row">
+    <div class="attn-card" data-goto="rcm">
+      <div class="attn-label">Unbilled Encounters <span class="attn-arrow">›</span></div>
+      <div class="attn-value col-amber">23</div>
+      <div class="attn-meta">No claim created · from 21.02</div>
+    </div>
+    <div class="attn-card" data-goto="rcm">
+      <div class="attn-label">Claim Errors <span class="attn-arrow">›</span></div>
+      <div class="attn-value col-red">12</div>
+      <div class="attn-meta">Needs correction · from 21.01</div>
+    </div>
+    <div class="attn-card" data-goto="rcm">
+      <div class="attn-label">Denials <span class="attn-arrow">›</span></div>
+      <div class="attn-value col-red">8</div>
+      <div class="attn-meta">Open · from 36.22</div>
+    </div>
+    <div class="attn-card" data-goto="rcm">
+      <div class="attn-label">Timely Filing Risk <span class="attn-arrow">›</span></div>
+      <div class="attn-value col-amber">5</div>
+      <div class="attn-meta">Approaching deadline · 22.20</div>
+    </div>
+    <div class="attn-card" data-goto="rcm">
+      <div class="attn-label">Old A/R · 90+ days <span class="attn-arrow">›</span></div>
+      <div class="attn-value col-purple">$98,940</div>
+      <div class="attn-meta">2 payers · from 31.09</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- PAGE: PRACTICE ACTIVITY                                       -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="page-activity" class="page">
+
+  <div class="kpi-row" style="grid-template-columns:repeat(5,1fr)">
+    <div class="kpi-card accent-left">
+      <div class="kpi-label">Completed</div>
+      <div class="kpi-value sm">1,505</div>
+      <div class="kpi-context">Distinct encounters</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Unique Patients</div>
+      <div class="kpi-value sm">1,058</div>
+      <div class="kpi-context">Distinct accounts</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">No-Shows</div>
+      <div class="kpi-value sm">73</div>
+      <div class="kpi-context">4.6% of volume<div class="kpi-tag tag-amber" style="margin-top:3px">Watch</div></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Cancelled</div>
+      <div class="kpi-value sm">28</div>
+      <div class="kpi-context">1.7% of scheduled</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Rescheduled</div>
+      <div class="kpi-value sm">41</div>
+      <div class="kpi-context">Moved to future date</div>
+    </div>
+  </div>
+
+  <div class="row r-2">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Visit Status by Day</div><div class="card-sub">Encounters and no-shows · July 2026</div></div></div>
+      <div class="chart-wrap"><canvas id="ch-act-daily" height="170"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">No-Shows by Day</div><div class="card-sub">Daily no-show count</div></div></div>
+      <div class="chart-wrap"><canvas id="ch-act-noshow" height="170"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row r-3">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Activity by Provider</div><div class="card-sub">Encounters per provider · July</div></div></div>
+      <div class="chart-wrap"><canvas id="ch-act-prov" height="160"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">By Visit Type</div><div class="card-sub">Mix of visit categories</div></div></div>
+      <div class="chart-wrap"><canvas id="ch-act-type" height="160"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">By Facility</div><div class="card-sub">Location breakdown</div></div></div>
+      <div class="chart-wrap"><canvas id="ch-act-fac" height="160"></canvas></div>
+    </div>
+  </div>
+
+  <div class="banner" style="background:var(--accent-dim);border-color:var(--accent-border);color:#3730A3">
+    <strong>Coming in V2:</strong>&nbsp; Available capacity · Same-day lost slots · Provider idle time · Patient wait time (requires 4.23, 13.04, 13.05, 13.06)
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- PAGE: PRODUCTION                                              -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="page-production" class="page">
+
+  <div class="kpi-row kpi-4">
+    <div class="kpi-card accent-left">
+      <div class="kpi-label">Billed CPT Units</div>
+      <div class="kpi-value sm">3,171</div>
+      <div class="kpi-context">Source: 37.08</div>
+    </div>
+    <div class="kpi-card accent-left">
+      <div class="kpi-label">Billed Charges</div>
+      <div class="kpi-value sm">$803,820</div>
+      <div class="kpi-context">From 37.08 CPT feed</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Payer Charges</div>
+      <div class="kpi-value sm">$800,231</div>
+      <div class="kpi-context">Insurance-billed portion</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Self / Patient Charges</div>
+      <div class="kpi-value sm">$21,752</div>
+      <div class="kpi-context">Patient-pay portion</div>
+    </div>
+  </div>
+
+  <div class="banner">
+    <strong>Source gap:</strong>&nbsp; The July 37.08 export was grouped by Visit Type and <strong>does not contain a CPT Code column</strong>. CPT unit totals (3,171) are usable, but the Top CPT table below shows estimated demo data only. A July 37.08 rerun with Filter Charges By = Service Date + CPT Code column is the most important missing file before go-live.
+  </div>
+
+  <div class="row r-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-head">
+        <div><div class="card-title">CPT Production by Day</div><div class="card-sub">Units and billed charges · July 2026</div></div>
+        <div class="toggle" id="toggle-prod2">
+          <button class="toggle-btn on" data-val="units">Units</button>
+          <button class="toggle-btn" data-val="charges">Charges</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="ch-prod-daily" height="140"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">CPT Mix</div><div class="card-sub">Estimated — rerun required for actuals</div></div></div>
+      <div class="chart-wrap"><canvas id="ch-prod-mix" height="140"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div><div class="card-title">CPT Production Table</div><div class="card-sub">Demo data only — requires July 37.08 rerun with CPT Code column</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>CPT</th><th>Description</th><th class="r">Units</th><th class="r">Claims</th><th class="r">Patients</th><th class="r">Charges</th></tr>
+        </thead>
+        <tbody id="cpt-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- PAGE: BILLING & CASH                                          -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="page-billing" class="page">
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="billing-tab">Billing</button>
+    <button class="tab-btn" data-tab="cash-tab">Cash</button>
+  </div>
+
+  <!-- Billing tab -->
+  <div id="billing-tab" class="tab-panel active">
+    <div class="kpi-row" style="grid-template-columns:repeat(5,1fr)">
+      <div class="kpi-card accent-left">
+        <div class="kpi-label">Billed Charges</div>
+        <div class="kpi-value xs">$821,983</div>
+        <div class="kpi-context">July total · 123.08</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Payer Charges</div>
+        <div class="kpi-value xs">$800,231</div>
+        <div class="kpi-context">97.4% of total</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Self / Patient</div>
+        <div class="kpi-value xs">$21,752</div>
+        <div class="kpi-context">2.6% of total</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Charges Submitted</div>
+        <div class="kpi-value xs">$1,108,498</div>
+        <div class="kpi-context">Incl. resubmissions</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Submission Events</div>
+        <div class="kpi-value xs">3,079</div>
+        <div class="kpi-context">Claim-level submissions</div>
+      </div>
+    </div>
+    <div class="row r-2">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Billed Charges by Day</div><div class="card-sub">Daily billing · July 2026</div></div></div>
+        <div class="chart-wrap"><canvas id="ch-bill-daily" height="160"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Billing Pipeline</div><div class="card-sub">Clinical activity → submissions · July</div></div></div>
+        <div style="padding:12px 0">
+          <div style="display:grid;grid-template-columns:1fr;gap:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+              <span style="font-size:12.5px;font-weight:600;color:var(--text-2)">Clinical Activity</span>
+              <span style="font-size:16px;font-weight:800;color:var(--text-1);font-variant-numeric:tabular-nums">1,505</span>
+            </div>
+            <div style="text-align:center;color:var(--text-3);font-size:18px">↓</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--accent-dim);border-radius:8px;border:1px solid var(--accent-border)">
+              <span style="font-size:12.5px;font-weight:600;color:var(--accent)">Billed Production</span>
+              <span style="font-size:16px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">$821,983</span>
+            </div>
+            <div style="text-align:center;color:var(--text-3);font-size:18px">↓</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--green-dim);border-radius:8px;border:1px solid #A7F3D0">
+              <span style="font-size:12.5px;font-weight:600;color:var(--green)">Claims Submitted</span>
+              <span style="font-size:16px;font-weight:800;color:var(--green);font-variant-numeric:tabular-nums">3,079 events</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:12px">Conversion percentages held until encounter and claim populations are aligned</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cash tab -->
+  <div id="cash-tab" class="tab-panel">
+    <div class="kpi-row kpi-3">
+      <div class="kpi-card green-left">
+        <div class="kpi-label">Cash Received</div>
+        <div class="kpi-value">$279,792</div>
+        <div class="kpi-context">Payment Received Date · July 2026</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Payer Cash</div>
+        <div class="kpi-value sm">$268,936</div>
+        <div class="kpi-context">96.1% of total cash</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Patient Cash</div>
+        <div class="kpi-value sm">$10,856</div>
+        <div class="kpi-context">3.9% · copays + self-pay</div>
+      </div>
+    </div>
+    <div class="row r-2">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Cash by Day</div><div class="card-sub">Payer + patient · stacked · July 2026</div></div></div>
+        <div class="chart-wrap"><canvas id="ch-cash-daily" height="180"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Cash by Payer</div><div class="card-sub">Estimated payer mix · July</div></div></div>
+        <div class="chart-wrap"><canvas id="ch-cash-payer" height="180"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- PAGE: RCM CONTROL TOWER                                       -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="page-rcm" class="page">
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="rcm-revenue">Revenue Creation</button>
+    <button class="tab-btn" data-tab="rcm-claims">Claims &amp; Exceptions</button>
+    <button class="tab-btn" data-tab="rcm-ar">A/R</button>
+  </div>
+
+  <!-- Revenue Creation -->
+  <div id="rcm-revenue" class="tab-panel active">
+    <div class="funnel">
+      <div class="funnel-step">
+        <div class="funnel-lbl">Encounters</div>
+        <div class="funnel-num">1,505</div>
+        <div class="funnel-sub">Completed visits</div>
+      </div>
+      <div class="funnel-arrow">→</div>
+      <div class="funnel-step">
+        <div class="funnel-lbl">Documented</div>
+        <div class="funnel-num">1,482</div>
+        <div class="funnel-sub">Chart locked · 98.5%</div>
+      </div>
+      <div class="funnel-arrow">→</div>
+      <div class="funnel-step">
+        <div class="funnel-lbl">Claim Created</div>
+        <div class="funnel-num">1,431</div>
+        <div class="funnel-sub">Of documented · 96.6%</div>
+      </div>
+      <div class="funnel-arrow">→</div>
+      <div class="funnel-step">
+        <div class="funnel-lbl">Submitted</div>
+        <div class="funnel-num">3,079</div>
+        <div class="funnel-sub">Events · incl. resubmit</div>
+      </div>
+    </div>
+
+    <div class="lag-row">
+      <div class="lag-card">
+        <div class="lag-lbl">DOS → Claim Lag</div>
+        <div class="lag-val">3.2 <span style="font-size:14px;font-weight:500">days</span></div>
+        <div class="lag-unit">Average · July 2026</div>
+      </div>
+      <div class="lag-card">
+        <div class="lag-lbl">Claim → Submission Lag</div>
+        <div class="lag-val">1.8 <span style="font-size:14px;font-weight:500">days</span></div>
+        <div class="lag-unit">Average · July 2026</div>
+      </div>
+      <div class="lag-card">
+        <div class="lag-lbl">Encounters Without Claims</div>
+        <div class="lag-val" style="color:var(--amber)">23</div>
+        <div class="lag-unit">Current open · from 21.02</div>
+      </div>
+      <div class="lag-card">
+        <div class="lag-lbl">Incomplete Documentation</div>
+        <div class="lag-val" style="color:var(--amber)">22</div>
+        <div class="lag-unit">Not yet locked</div>
+      </div>
+    </div>
+
+    <div class="row r-2">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Claim Lag Distribution</div><div class="card-sub">DOS to submission · days</div></div></div>
+        <div class="chart-wrap"><canvas id="ch-rcm-lag" height="160"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Submissions by Day</div><div class="card-sub">Claim submission events · July</div></div></div>
+        <div class="chart-wrap"><canvas id="ch-rcm-sub" height="160"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Claims & Exceptions -->
+  <div id="rcm-claims" class="tab-panel">
+    <div class="kpi-row kpi-4" style="margin-bottom:14px">
+      <div class="kpi-card">
+        <div class="kpi-label">Open Claims</div>
+        <div class="kpi-value sm" id="clm-total">12</div>
+        <div class="kpi-context">Filtered view</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Balance</div>
+        <div class="kpi-value sm" id="clm-balance">$10,822</div>
+        <div class="kpi-context">Filtered view</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Avg Age</div>
+        <div class="kpi-value sm">35 days</div>
+        <div class="kpi-context">Days since DOS</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Critical (90+ days)</div>
+        <div class="kpi-value sm" style="color:var(--red)">2</div>
+        <div class="kpi-context">Needs escalation</div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <label>Issue</label>
+      <select id="flt-issue"><option value="">All issues</option><option>Denial</option><option>Authorization</option><option>Timely filing</option><option>Missing info</option><option>Duplicate</option></select>
+      <label>Payer</label>
+      <select id="flt-payer"><option value="">All payers</option><option>Medicare</option><option>Medi-Cal</option><option>Blue Shield</option><option>UHC</option><option>Aetna</option><option>Anthem</option><option>Cigna</option><option>IEHP</option><option>Molina</option></select>
+      <label>Status</label>
+      <select id="flt-status"><option value="">All statuses</option><option>Needs appeal</option><option>Pending correction</option><option>Escalated</option><option>On hold</option><option>Research</option><option>Submitted</option></select>
+      <label>Owner</label>
+      <select id="flt-owner"><option value="">All owners</option><option>Maria R.</option><option>James T.</option><option>Sarah M.</option><option>Unassigned</option></select>
+    </div>
+
+    <div class="card" style="padding:0">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Age</th><th>Issue</th><th>Payer</th><th>Claim #</th><th class="r">Balance</th><th>Status</th><th>Owner</th>
+            </tr>
+          </thead>
+          <tbody id="claims-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- A/R -->
+  <div id="rcm-ar" class="tab-panel">
+    <div class="kpi-row kpi-4" style="margin-bottom:18px">
+      <div class="kpi-card accent-left">
+        <div class="kpi-label">Total A/R</div>
+        <div class="kpi-value sm">$431,280</div>
+        <div class="kpi-context">From 31.09 · Sep snapshot</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Payer A/R</div>
+        <div class="kpi-value sm">$409,740</div>
+        <div class="kpi-context">95.0% of total</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Patient A/R</div>
+        <div class="kpi-value sm">$21,540</div>
+        <div class="kpi-context">5.0% of total</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Days in A/R</div>
+        <div class="kpi-value sm">~15.8</div>
+        <div class="kpi-context">Estimated · Jul charges base</div>
+      </div>
+    </div>
+
+    <div class="row r-2">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">A/R Aging Buckets</div><div class="card-sub">Balance by age · Sep 2026 snapshot</div></div></div>
+        <div style="margin-top:8px">
+          <div class="ar-bar-row"><div class="ar-bar-lbl">0–30d</div><div class="ar-bar-track"><div class="ar-bar-fill" style="background:var(--green);width:43%"><span class="ar-bar-txt">43%</span></div></div><div class="ar-bar-amt">$185,420</div></div>
+          <div class="ar-bar-row"><div class="ar-bar-lbl">31–60d</div><div class="ar-bar-track"><div class="ar-bar-fill" style="background:var(--teal);width:21.5%"><span class="ar-bar-txt">22%</span></div></div><div class="ar-bar-amt">$92,740</div></div>
+          <div class="ar-bar-row"><div class="ar-bar-lbl">61–90d</div><div class="ar-bar-track"><div class="ar-bar-fill" style="background:var(--amber);width:12.6%"><span class="ar-bar-txt">13%</span></div></div><div class="ar-bar-amt">$54,180</div></div>
+          <div class="ar-bar-row"><div class="ar-bar-lbl">91–120d</div><div class="ar-bar-track"><div class="ar-bar-fill" style="background:#EA580C;width:7.3%"><span class="ar-bar-txt">7%</span></div></div><div class="ar-bar-amt">$31,650</div></div>
+          <div class="ar-bar-row"><div class="ar-bar-lbl">120+d</div><div class="ar-bar-track"><div class="ar-bar-fill" style="background:var(--red);width:15.6%"><span class="ar-bar-txt">16%</span></div></div><div class="ar-bar-amt">$67,290</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">A/R by Payer</div><div class="card-sub">Sep 2026 snapshot · 31.09</div></div></div>
+        <div class="chart-wrap"><canvas id="ch-ar-payer" height="200"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Old A/R Detail — 90+ Days</div><div class="card-sub">From 31.09 · Payer claim aging detail</div></div></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Payer</th><th>Service Year</th><th class="r">91–120d</th><th class="r">120+d</th><th class="r">Total Old A/R</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Medicare</td><td>2025</td><td class="r">$14,200</td><td class="r">$38,100</td><td class="r">$52,300</td><td><span class="badge b-red">Escalated</span></td></tr>
+            <tr><td>Blue Shield</td><td>2026</td><td class="r">$9,450</td><td class="r">$16,300</td><td class="r">$25,750</td><td><span class="badge b-amber">In appeal</span></td></tr>
+            <tr><td>Medi-Cal</td><td>2025</td><td class="r">$5,800</td><td class="r">$12,890</td><td class="r">$18,690</td><td><span class="badge b-amber">Research</span></td></tr>
+            <tr><td>Patient A/R</td><td>2025–26</td><td class="r">$2,200</td><td class="r">—</td><td class="r">$2,200</td><td><span class="badge b-gray">Statements sent</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- PAGE: DATA HEALTH                                             -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="page-health" class="page">
+
+  <div class="kpi-row kpi-4" style="margin-bottom:20px">
+    <div class="kpi-card green-left">
+      <div class="kpi-label">Validated Feeds</div>
+      <div class="kpi-value sm">4</div>
+      <div class="kpi-context">Reconciled to known totals</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Supported Inference</div>
+      <div class="kpi-value sm" style="color:var(--amber)">1</div>
+      <div class="kpi-context">CPT units usable · code-level gap</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Snapshot Feeds</div>
+      <div class="kpi-value sm" style="color:var(--accent)">4</div>
+      <div class="kpi-context">Point-in-time · no time series yet</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Missing / Required</div>
+      <div class="kpi-value sm" style="color:var(--red)">1</div>
+      <div class="kpi-context">July 37.08 with CPT Code col</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-head"><div><div class="card-title">Core Practice Pulse Feeds</div><div class="card-sub">Source files for Overview · Activity · Production · Billing · Cash</div></div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Feed</th><th>eBO Source</th><th>Data Through</th><th class="r">Rows</th><th>Import</th><th>Validation</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Attendance / No-Shows</strong></td><td style="color:var(--text-2)">13.07 – Visit Counts</td><td>Jul 31, 2026</td><td class="r">847</td><td class="check">✓</td><td><span class="val-ok">VALIDATED</span></td><td style="font-size:12px;color:var(--text-3)">73 no-shows confirmed</td></tr>
+          <tr><td><strong>Encounters</strong></td><td style="color:var(--text-2)">4.02 – Encounter Patient Download</td><td>Jul 31, 2026</td><td class="r">1,574</td><td class="check">✓</td><td><span class="val-ok">VALIDATED</span></td><td style="font-size:12px;color:var(--text-3)">1,505 distinct IDs · 1,058 patients</td></tr>
+          <tr><td><strong>CPT Production</strong></td><td style="color:var(--text-2)">37.08 – Fin. Analysis CPT Level</td><td>Jul 31, 2026</td><td class="r">2,305</td><td class="check">✓</td><td><span class="val-inf">SUPPORTED INFERENCE</span></td><td style="font-size:12px;color:var(--amber)">No CPT Code col · rerun required</td></tr>
+          <tr><td><strong>Billing</strong></td><td style="color:var(--text-2)">123.08 – Daily Transactions</td><td>Aug 27, 2026</td><td class="r">52 days</td><td class="check">✓</td><td><span class="val-ok">VALIDATED</span></td><td style="font-size:12px;color:var(--text-3)">Jul slice = $821,983 charges</td></tr>
+          <tr><td><strong>Cash</strong></td><td style="color:var(--text-2)">11.01 – Day Sheet Payments</td><td>Jul 31, 2026</td><td class="r">524</td><td class="check">✓</td><td><span class="val-ok">VALIDATED</span></td><td style="font-size:12px;color:var(--text-3)">$279,792 · Payment Received Date</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><div><div class="card-title">RCM Feeds</div><div class="card-sub">Source files for RCM Control Tower — point-in-time snapshots</div></div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Feed</th><th>eBO Source</th><th>Snapshot Date</th><th class="r">Rows</th><th>Import</th><th>Validation</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Revenue Cycle Lag</strong></td><td style="color:var(--text-2)">22.04 – RC Lag Dashboard</td><td>—</td><td class="r">—</td><td style="color:var(--text-3)">—</td><td><span class="val-miss">NOT YET LOADED</span></td><td style="font-size:12px;color:var(--text-3)">Needed for lag metrics</td></tr>
+          <tr><td><strong>Unbilled Encounters</strong></td><td style="color:var(--text-2)">21.02 – Encounters Without Claims</td><td>Sep 1, 2026</td><td class="r">23</td><td class="check">✓</td><td><span class="val-snap">SNAPSHOT</span></td><td style="font-size:12px;color:var(--text-3)">Current unresolved population</td></tr>
+          <tr><td><strong>Claim Status</strong></td><td style="color:var(--text-2)">21.01 – Claim Status Dashboard</td><td>Sep 1, 2026</td><td class="r">89</td><td class="check">✓</td><td><span class="val-snap">SNAPSHOT</span></td><td style="font-size:12px;color:var(--text-3)">Not a monthly time series</td></tr>
+          <tr><td><strong>Ops Tracking</strong></td><td style="color:var(--text-2)">22.22 – Ops Tracking Report</td><td>Sep 1, 2026</td><td class="r">89</td><td class="check">✓</td><td><span class="val-snap">SNAPSHOT</span></td><td style="font-size:12px;color:var(--text-3)">Claim-level action queue</td></tr>
+          <tr><td><strong>Timely Filing</strong></td><td style="color:var(--text-2)">22.20 – Timely Filing Analysis</td><td>—</td><td class="r">—</td><td style="color:var(--text-3)">—</td><td><span class="val-miss">NOT YET LOADED</span></td><td style="font-size:12px;color:var(--text-3)">Needed for filing risk alerts</td></tr>
+          <tr><td><strong>Denials</strong></td><td style="color:var(--text-2)">36.22 – Claim Level Denials</td><td>Sep 1, 2026</td><td class="r">43</td><td class="check">✓</td><td><span class="val-snap">SNAPSHOT</span></td><td style="font-size:12px;color:var(--text-3)">8 open denials</td></tr>
+          <tr><td><strong>Payer A/R</strong></td><td style="color:var(--text-2)">31.09 – Payer Claim Aging Detail</td><td>Sep 1, 2026</td><td class="r">156</td><td class="check">✓</td><td><span class="val-snap">SNAPSHOT</span></td><td style="font-size:12px;color:var(--text-3)">Total A/R $431,280</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="banner" style="margin-top:16px">
+    <strong>Once Cognos automation is live:</strong>&nbsp; The ETL layer will ingest these same feeds from scheduled CSV drops into <code>data/raw/</code> subfolders. The site will clearly distinguish <strong>0</strong> (zero value) from <strong>source file missing</strong> — tracked via <code>source_file</code> and <code>ingestion_run</code> metadata tables.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- PAGE: CALL ANALYTICS                                           -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="page-calls" class="page">
+
+  <!-- Monthly summary banner -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 20px;margin-bottom:16px;display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+    <div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;color:var(--text-3);text-transform:uppercase">Aug 2026 · Month Total</div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:2px">21 business days · Spectrum · Dr. Singh's Office</div>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-left:auto;align-items:center">
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:700;line-height:1" id="ms-total">—</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px">Inbound Callers</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:700;line-height:1;color:var(--green)" id="ms-rate">—</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px">Avg Connection Rate</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:700;line-height:1;color:var(--red)" id="ms-nc">—</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px">Never Connected</div>
+      </div>
+      <div style="width:1px;background:var(--border);height:36px;align-self:center"></div>
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:700;line-height:1" id="ms-ob">—</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px">Outbound Calls</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:700;line-height:1;color:var(--amber)" id="ms-callbacks">—</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px">NC Callbacks Done</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Month trend chart -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px">
+    <div class="section-label">Monthly Trend — Connection Rate &amp; Never-Connected</div>
+    <div class="chart-wrap" style="height:130px"><canvas id="ch-calls-trend"></canvas></div>
+  </div>
+
+  <!-- Date tabs — populated dynamically from fetched data -->
+  <div id="calls-date-tabs" style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+    <span style="font-size:12px;color:var(--text-3)">Loading data…</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--text-3)" id="c-date-label">—</span>
+  </div>
+
+  <!-- Inbound KPI row -->
+  <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Inbound</div>
+  <div class="kpi-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px">
+    <div class="kpi-card">
+      <div class="kpi-label">Unique Callers</div>
+      <div class="kpi-value" id="c-total">—</div>
+    </div>
+    <div class="kpi-card green-left">
+      <div class="kpi-label">Connection Rate</div>
+      <div class="kpi-value" id="c-rate">—</div>
+      <div class="kpi-context">Answered or left VM</div>
+    </div>
+    <div class="kpi-card" style="border-left:3px solid var(--red)">
+      <div class="kpi-label">Never Connected</div>
+      <div class="kpi-value" style="color:var(--red)" id="c-nc">—</div>
+      <div class="kpi-context">IVR / Queue drop</div>
+    </div>
+    <div class="kpi-card" style="border-left:3px solid var(--purple)">
+      <div class="kpi-label">Spanish NC</div>
+      <div class="kpi-value" style="color:var(--purple)" id="c-sp">—</div>
+      <div class="kpi-context">Spanish line drops</div>
+    </div>
+    <div class="kpi-card" style="border-left:3px solid var(--teal)">
+      <div class="kpi-label">Left Voicemail</div>
+      <div class="kpi-value" style="color:var(--teal)" id="c-vm">—</div>
+      <div class="kpi-context">Needs callback</div>
+    </div>
+  </div>
+
+  <!-- Outreach KPI row -->
+  <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Outreach</div>
+  <div class="kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+    <div class="kpi-card">
+      <div class="kpi-label">Outbound Calls</div>
+      <div class="kpi-value" id="c-ob">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Unique Patients</div>
+      <div class="kpi-value" id="c-ob-uniq">—</div>
+      <div class="kpi-context">Distinct numbers dialed</div>
+    </div>
+    <div class="kpi-card green-left">
+      <div class="kpi-label">Reach Rate</div>
+      <div class="kpi-value" id="c-ob-rate">—</div>
+      <div class="kpi-context">Calls with duration</div>
+    </div>
+    <div class="kpi-card" style="border-left:3px solid var(--amber)">
+      <div class="kpi-label">NC Callbacks Done</div>
+      <div class="kpi-value" style="color:var(--amber)" id="c-callbacks">—</div>
+      <div class="kpi-context" id="c-cb-rate">of today's NC</div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+      <div class="section-label">Never-Connected by Shift</div>
+      <div class="chart-wrap" style="height:140px"><canvas id="ch-calls-shift"></canvas></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+      <div class="section-label">Call Outcomes (all inbound)</div>
+      <div class="chart-wrap" style="height:140px"><canvas id="ch-calls-outcome"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Never-connected table -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div class="section-label" style="margin:0">Never-Connected Callers</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="calls-lang-filter" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text-1)">
+          <option value="">All Languages</option>
+          <option value="Spanish">Spanish</option>
+          <option value="Unknown">Unknown</option>
+        </select>
+        <select id="calls-status-filter" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text-1)">
+          <option value="">All Statuses</option>
+          <option value="IVR">IVR</option>
+          <option value="Queue">Queue</option>
+        </select>
+        <button id="calls-export-btn" style="font-size:12px;padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text-1);cursor:pointer">Export CSV</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Phone</th><th>Caller Name</th><th>Language</th>
+          <th>First Seen</th><th class="r">Attempts</th><th>Status</th>
+        </tr></thead>
+        <tbody id="calls-nc-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /#main -->
+</div><!-- /#app -->
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────
+const DAYS = Array.from({length:31},(_,i)=>`Jul ${i+1}`);
+// Jul 2026: weekends at idx 3,4 (Jul4-5), 10,11 (Jul11-12), 17,18 (Jul18-19), 24,25 (Jul25-26)
+const ENC    = [62,66,69,0,0,62,67,65,71,63,0,0,66,73,61,67,70,0,0,63,72,58,65,68,0,0,64,73,59,67,54];
+const NOSHOW = [3,3,4,0,0,3,3,3,4,3,0,0,3,3,3,4,3,0,0,3,3,3,3,4,0,0,3,3,3,3,3];
+const T_ENC=1505,T_CHG=821983,T_CASH=279792,T_UNITS=3171;
+const CHG   = ENC.map(e=>e>0?Math.round(e/T_ENC*T_CHG):0);
+const CASH  = ENC.map(e=>e>0?Math.round(e/T_ENC*T_CASH):0);
+const UNITS = ENC.map(e=>e>0?Math.round(e/T_ENC*T_UNITS):0);
+const PAYER_CASH = CASH.map(c=>Math.round(c*0.9619));
+const PAT_CASH   = CASH.map((c,i)=>c-PAYER_CASH[i]);
+
+const CPT_ROWS = [
+  ['99214','Office visit, est. pt. Level 4',814,756,634,244258],
+  ['99213','Office visit, est. pt. Level 3',521,481,412,128165],
+  ['99215','Office visit, est. pt. Level 5',203,189,176,73484],
+  ['99204','Office visit, new pt. Level 4',274,256,256,95288],
+  ['G0439','Medicare annual wellness',219,211,211,66792],
+  ['99490','CCM management 20+ min',231,198,143,51488],
+  ['99203','Office visit, new pt. Level 3',148,131,131,42328],
+  ['93000','Routine ECG w/interpretation',187,176,171,28798],
+  ['99205','Office visit, new pt. Level 5',89,82,82,36042],
+  ['71046','Chest X-ray, 2 views',96,89,87,18048],
+  ['82947','Glucose test',143,132,128,9009],
+  ['99242','Office consult, Level 2',42,39,39,10920],
+];
+
+const CLAIMS = [
+  {age:45,ac:'med', issue:'Denial — CO-97 (bundling)',     payer:'Blue Shield',  claim:'210455',bal:847,   status:'Needs appeal',        owner:'Maria R.'},
+  {age:38,ac:'med', issue:'Authorization missing',         payer:'Medicare',     claim:'210312',bal:1240,  status:'Auth request sent',   owner:'James T.'},
+  {age:62,ac:'hi',  issue:'Timely filing risk',            payer:'Aetna',        claim:'209987',bal:620,   status:'Escalated',           owner:'Unassigned'},
+  {age:15,ac:'low', issue:'Missing modifier',              payer:'UHC',          claim:'211038',bal:415,   status:'Pending correction',  owner:'Sarah M.'},
+  {age:91,ac:'crit',issue:'CO-4 invalid procedure',        payer:'Medi-Cal',     claim:'208812',bal:390,   status:'On hold',             owner:'Maria R.'},
+  {age:28,ac:'low', issue:'Duplicate claim',               payer:'Anthem',       claim:'210678',bal:755,   status:'Research',            owner:'James T.'},
+  {age:55,ac:'hi',  issue:'EOB mismatch',                  payer:'Cigna',        claim:'209443',bal:1890,  status:'2nd level appeal',    owner:'Unassigned'},
+  {age:7, ac:'low', issue:'Missing patient info',          payer:'IEHP',         claim:'211234',bal:280,   status:'Outreach pending',    owner:'Sarah M.'},
+  {age:33,ac:'med', issue:'Denial — CO-45',                payer:'Medicare',     claim:'210556',bal:1120,  status:'Recoupment review',   owner:'Maria R.'},
+  {age:19,ac:'low', issue:'Payer needs additional info',   payer:'Molina',       claim:'210887',bal:530,   status:'Submitted',           owner:'James T.'},
+  {age:77,ac:'crit',issue:'No response — 2nd request',     payer:'Blue Shield',  claim:'208990',bal:2340,  status:'Escalated',           owner:'Unassigned'},
+  {age:12,ac:'low', issue:'Coordination of benefits',      payer:'Anthem',       claim:'211089',bal:890,   status:'COB requested',       owner:'Sarah M.'},
+];
+
+// ── Chart defaults ────────────────────────────────────────────────
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.font.size   = 11;
+Chart.defaults.color       = '#94A3B8';
+Chart.defaults.plugins.legend.display = false;
+Chart.defaults.plugins.tooltip.backgroundColor = '#0F172A';
+Chart.defaults.plugins.tooltip.titleColor = '#F1F5F9';
+Chart.defaults.plugins.tooltip.bodyColor  = '#CBD5E1';
+Chart.defaults.plugins.tooltip.padding    = 10;
+Chart.defaults.plugins.tooltip.cornerRadius = 6;
+Chart.defaults.scale.grid.color = 'rgba(148,163,184,.1)';
+Chart.defaults.scale.border.display = false;
+
+// ── Navigation ────────────────────────────────────────────────────
+const PAGE_META = {
+  overview:   {title:'Overview',          sub:'How are we doing at a glance?'},
+  activity:   {title:'Practice Activity', sub:'Are patients showing up and are we using the practice effectively?'},
+  production: {title:'Production',        sub:'What services are we actually billing?'},
+  billing:    {title:'Billing & Cash',    sub:'Did the work enter the billing pipeline and what money arrived?'},
+  rcm:        {title:'RCM Control Tower', sub:'Operational claims and revenue cycle management'},
+  health:     {title:'Data Health',       sub:'Can I trust what I\'m looking at?'},
+  calls:      {title:'Call Analytics',    sub:'Spectrum inbound call metrics — connection rates and never-connected callers'},
+};
+
+function navigate(pageId) {
+  document.querySelectorAll('.nav-item').forEach(el=>{
+    el.classList.toggle('active', el.dataset.page===pageId);
+  });
+  document.querySelectorAll('.page').forEach(el=>{
+    el.classList.toggle('active', el.id===`page-${pageId}`);
+  });
+  const m = PAGE_META[pageId]||{};
+  document.getElementById('hdr-title').textContent = m.title||pageId;
+  document.getElementById('hdr-sub').textContent   = m.sub||'';
+  initChartsFor(pageId);
+  // Re-render calls on return visits after first init
+  if (pageId === 'calls' && _callsBuilt) {
+    renderCallsForDate(_callsActiveDate);
+  }
+}
+
+document.querySelectorAll('.nav-item').forEach(el=>{
+  el.addEventListener('click',()=>navigate(el.dataset.page));
+});
+document.querySelectorAll('.attn-card').forEach(el=>{
+  el.addEventListener('click',()=>navigate(el.dataset.goto));
+});
+
+// ── Tab system ────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    const panelId = this.dataset.tab;
+    const bar = this.parentElement;
+    bar.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    const page = this.closest('.page');
+    page.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+    // init any charts in revealed tab
+    initChartsFor(panelId);
+  });
+});
+
+// ── Toggle (production metric) ────────────────────────────────────
+function wireToggle(toggleId, onUnits, onCharges) {
+  const tgl = document.getElementById(toggleId);
+  if (!tgl) return;
+  tgl.querySelectorAll('.toggle-btn').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      tgl.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('on'));
+      this.classList.add('on');
+      if (this.dataset.val==='units') onUnits();
+      else onCharges();
+    });
+  });
+}
+
+// ── Charts ────────────────────────────────────────────────────────
+const _ch = {};
+const _inited = new Set();
+let _callsActiveDate = '2026-08-31';
+let _callsCharts = {};
+let _callsBuilt = false;
+
+function mk(id, type, data, opts={}) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  if (_ch[id]) { _ch[id].destroy(); }
+  _ch[id] = new Chart(el, {type, data, options:{responsive:true,maintainAspectRatio:false,...opts}});
+  return _ch[id];
+}
+
+function area(color, data, label='') {
+  return {
+    label, data,
+    borderColor: color, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+    fill: true,
+    backgroundColor: ctx => {
+      const g = ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height||200);
+      const hex = color;
+      g.addColorStop(0, hex+'30'); g.addColorStop(1, hex+'02');
+      return g;
+    },
+    tension: 0.35
+  };
+}
+
+function bar(color, data, label='') {
+  return {label, data, backgroundColor: color+'CC', borderRadius: 3, borderSkipped: false};
+}
+
+const SCALES_MINIMAL = {
+  x:{ticks:{maxRotation:0,font:{size:10}},grid:{display:false}},
+  y:{ticks:{font:{size:10},callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'k':v},beginAtZero:true}
+};
+
+function initChartsFor(id) {
+  if (_inited.has(id)) return;
+  _inited.add(id);
+  const builders = {
+    overview:     buildOverview,
+    activity:     buildActivity,
+    production:   buildProduction,
+    billing:      buildBilling,
+    'billing-tab':buildBillingTab,
+    'cash-tab':   buildCashTab,
+    rcm:          buildRcm,
+    'rcm-revenue':buildRcmRevenue,
+    'rcm-claims': buildRcmClaims,
+    'rcm-ar':     buildRcmAr,
+    health:       ()=>{},
+    calls:        buildCalls,
+  };
+  builders[id]?.();
+}
+
+// ── Overview charts ───────────────────────────────────────────────
+function buildOverview() {
+  // Activity: grouped bar enc + noshow
+  mk('ch-ov-activity','bar',{
+    labels: DAYS,
+    datasets: [
+      bar('#4F46E5',ENC,'Encounters'),
+      bar('#F59E0B',NOSHOW,'No-Shows'),
+    ]
+  },{
+    scales:{
+      x:{ticks:{maxRotation:0,font:{size:9},callback:(_,i)=>(i%7===2||i%7===9)?DAYS[i]:''},grid:{display:false}},
+      y:{ticks:{font:{size:10}},beginAtZero:true},
+    },
+    plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y}`}},
+      legend:{display:true,position:'top',labels:{font:{size:11},usePointStyle:true,pointStyleWidth:8}}}
+  });
+
+  // Production: area chart (units by default)
+  let prodChart = mk('ch-ov-prod','line',{labels:DAYS,datasets:[area('#4F46E5',UNITS,'CPT Units')]},
+    {scales:{...SCALES_MINIMAL,y:{...SCALES_MINIMAL.y,ticks:{...SCALES_MINIMAL.y.ticks,callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'k':v}}}}
+  );
+
+  wireToggle('toggle-prod',
+    ()=>{ prodChart.data.datasets[0].data=UNITS; prodChart.data.datasets[0].label='CPT Units'; prodChart.update(); },
+    ()=>{ prodChart.data.datasets[0].data=CHG;   prodChart.data.datasets[0].label='Charges';   prodChart.update(); }
+  );
+
+  // Cash: stacked bar
+  mk('ch-ov-cash','bar',{
+    labels:DAYS,
+    datasets:[
+      bar('#059669',PAYER_CASH,'Payer'),
+      bar('#34D399',PAT_CASH,'Patient'),
+    ]
+  },{
+    scales:{
+      x:{ticks:{maxRotation:0,font:{size:9},callback:(_,i)=>(i%7===2)?DAYS[i]:''},grid:{display:false}},
+      y:{stacked:true,ticks:{font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'},beginAtZero:true},
+      _x:{stacked:true}
+    },
+    plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: $${c.parsed.y.toLocaleString()}`}},
+      legend:{display:true,position:'top',labels:{font:{size:11},usePointStyle:true,pointStyleWidth:8}}}
+  });
+}
+
+// ── Activity charts ───────────────────────────────────────────────
+function buildActivity() {
+  mk('ch-act-daily','bar',{
+    labels:DAYS,
+    datasets:[bar('#4F46E5',ENC,'Completed'),bar('#F59E0B',NOSHOW,'No-Show')]
+  },{scales:{
+    x:{ticks:{maxRotation:0,font:{size:9}},grid:{display:false}},
+    y:{stacked:false,beginAtZero:true,ticks:{font:{size:10}}}
+  },plugins:{legend:{display:true,position:'top',labels:{font:{size:11},usePointStyle:true,pointStyleWidth:8}}}});
+
+  mk('ch-act-noshow','bar',{labels:DAYS,datasets:[bar('#F59E0B',NOSHOW,'No-Shows')]},
+    {scales:{x:{ticks:{maxRotation:0,font:{size:9}},grid:{display:false}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}
+  );
+
+  // By provider (horizontal bar — stub)
+  mk('ch-act-prov','bar',{
+    labels:['Dr. Singh','Dr. Patel','Dr. Rivera','Dr. Chen','NP Torres'],
+    datasets:[{...bar('#4F46E5',[487,362,291,248,117],'Encounters'),borderRadius:4}]
+  },{indexAxis:'y',scales:{x:{beginAtZero:true,ticks:{font:{size:10}}},y:{ticks:{font:{size:11}},grid:{display:false}}}});
+
+  // By visit type (donut)
+  mk('ch-act-type','doughnut',{
+    labels:['Office Visit — Est.','Office Visit — New','Annual Wellness','CCM','Consult','Other'],
+    datasets:[{data:[891,511,219,148,42,107],backgroundColor:['#4F46E5','#0F766E','#059669','#D97706','#7C3AED','#94A3B8'],borderWidth:2,borderColor:'var(--surface)'}]
+  },{plugins:{legend:{display:true,position:'right',labels:{font:{size:11},boxWidth:10}}}});
+
+  // By facility
+  mk('ch-act-fac','bar',{
+    labels:['Main Office','Satellite A','Telehealth'],
+    datasets:[{...bar('#0F766E',[1089,287,129],'Encounters'),borderRadius:4}]
+  },{scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{beginAtZero:true,ticks:{font:{size:10}}}}});
+}
+
+// ── Production charts ─────────────────────────────────────────────
+function buildProduction() {
+  // Render CPT table
+  const tbody = document.getElementById('cpt-tbody');
+  if (tbody) {
+    tbody.innerHTML = CPT_ROWS.map(r=>`
+      <tr>
+        <td><strong>${r[0]}</strong></td>
+        <td>${r[1]}</td>
+        <td class="r">${r[2].toLocaleString()}</td>
+        <td class="r">${r[3].toLocaleString()}</td>
+        <td class="r">${r[4].toLocaleString()}</td>
+        <td class="r">$${r[5].toLocaleString()}</td>
+      </tr>`).join('');
+  }
+
+  let prodChart2 = mk('ch-prod-daily','line',{labels:DAYS,datasets:[area('#4F46E5',UNITS,'CPT Units')]},
+    {scales:{x:{ticks:{maxRotation:0,font:{size:9},callback:(_,i)=>i%7===2?DAYS[i]:''},grid:{display:false}},
+      y:{beginAtZero:true,ticks:{font:{size:10}}}}}
+  );
+  wireToggle('toggle-prod2',
+    ()=>{ prodChart2.data.datasets[0].data=UNITS; prodChart2.data.datasets[0].label='CPT Units'; prodChart2.options.scales.y.ticks.callback=v=>v; prodChart2.update(); },
+    ()=>{ prodChart2.data.datasets[0].data=CHG;   prodChart2.data.datasets[0].label='Charges'; prodChart2.options.scales.y.ticks.callback=v=>'$'+(v/1000).toFixed(0)+'k'; prodChart2.update(); }
+  );
+
+  mk('ch-prod-mix','doughnut',{
+    labels:['E&M Est.','E&M New','Wellness','CCM','Procedures','Other'],
+    datasets:[{data:[1538,511,219,231,325,347],backgroundColor:['#4F46E5','#0F766E','#059669','#D97706','#7C3AED','#94A3B8'],borderWidth:2,borderColor:'var(--surface)'}]
+  },{plugins:{legend:{display:true,position:'right',labels:{font:{size:11},boxWidth:10}},tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed} units`}}}});
+}
+
+// ── Billing charts ────────────────────────────────────────────────
+function buildBilling() { buildBillingTab(); }
+
+function buildBillingTab() {
+  if (_inited.has('billing-tab')) return; _inited.add('billing-tab');
+  mk('ch-bill-daily','line',{labels:DAYS,datasets:[area('#4F46E5',CHG,'Billed Charges')]},{
+    scales:{x:{ticks:{maxRotation:0,font:{size:9},callback:(_,i)=>i%7===2?DAYS[i]:''},grid:{display:false}},
+    y:{beginAtZero:true,ticks:{font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'}}}
+  });
+}
+
+function buildCashTab() {
+  if (_inited.has('cash-tab')) return; _inited.add('cash-tab');
+  mk('ch-cash-daily','bar',{
+    labels:DAYS,
+    datasets:[bar('#059669',PAYER_CASH,'Payer Cash'),bar('#34D399',PAT_CASH,'Patient Cash')]
+  },{
+    scales:{
+      x:{ticks:{maxRotation:0,font:{size:9},callback:(_,i)=>i%7===2?DAYS[i]:''},grid:{display:false}},
+      y:{stacked:true,beginAtZero:true,ticks:{font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'}}
+    },
+    plugins:{legend:{display:true,position:'top',labels:{font:{size:11},usePointStyle:true,pointStyleWidth:8}}}
+  });
+
+  mk('ch-cash-payer','doughnut',{
+    labels:['Medicare','Medi-Cal','Blue Shield','UHC','Aetna','Anthem','Patient','Other'],
+    datasets:[{data:[97200,62400,38700,29800,18400,14200,10856,8236],
+      backgroundColor:['#4F46E5','#0F766E','#059669','#D97706','#7C3AED','#EA580C','#94A3B8','#CBD5E1'],
+      borderWidth:2,borderColor:'var(--surface)'}]
+  },{plugins:{legend:{display:true,position:'right',labels:{font:{size:10.5},boxWidth:10}},
+    tooltip:{callbacks:{label:c=>`${c.label}: $${c.parsed.toLocaleString()}`}}}});
+}
+
+// ── RCM charts ────────────────────────────────────────────────────
+function buildRcm() { buildRcmRevenue(); }
+
+function buildRcmRevenue() {
+  if (_inited.has('rcm-revenue')) return; _inited.add('rcm-revenue');
+
+  // Lag distribution
+  mk('ch-rcm-lag','bar',{
+    labels:['0–1d','1–2d','2–3d','3–5d','5–7d','7–14d','14+d'],
+    datasets:[{...bar('#4F46E5',[312,487,398,203,89,24,18],'Claims'),borderRadius:4}]
+  },{scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{beginAtZero:true,ticks:{font:{size:10}}}}});
+
+  // Submissions by day (from CHG proportionally scaled to 3079 events)
+  const subEvents = ENC.map(e=>e>0?Math.round(e/T_ENC*3079):0);
+  mk('ch-rcm-sub','line',{labels:DAYS,datasets:[area('#059669',subEvents,'Submission Events')]},{
+    scales:{x:{ticks:{maxRotation:0,font:{size:9},callback:(_,i)=>i%7===2?DAYS[i]:''},grid:{display:false}},
+    y:{beginAtZero:true,ticks:{font:{size:10}}}}
+  });
+
+  buildRcmClaims();
+}
+
+function buildRcmClaims() {
+  if (_inited.has('rcm-claims')) return; _inited.add('rcm-claims');
+  renderClaimsTable(CLAIMS);
+
+  const ageCls = {low:'<span class="adot adot-low"></span>',med:'<span class="adot adot-med"></span>',hi:'<span class="adot adot-hi"></span>',crit:'<span class="adot adot-crit"></span>'};
+  const statusBadge = s=>{
+    if(s.includes('appeal')||s.includes('Escalated')) return `<span class="badge b-red">${s}</span>`;
+    if(s.includes('Pending')||s.includes('hold')||s.includes('Research')) return `<span class="badge b-amber">${s}</span>`;
+    if(s.includes('Submitted')||s.includes('sent')) return `<span class="badge b-blue">${s}</span>`;
+    return `<span class="badge b-gray">${s}</span>`;
+  };
+
+  function renderClaimsTable(rows) {
+    const tbody = document.getElementById('claims-tbody');
+    if (!tbody) return;
+    const totClaims = rows.length;
+    const totBal = rows.reduce((s,r)=>s+r.bal,0);
+    document.getElementById('clm-total').textContent = totClaims;
+    document.getElementById('clm-balance').textContent = '$'+totBal.toLocaleString();
+    tbody.innerHTML = rows.map(r=>`
+      <tr>
+        <td>${ageCls[r.ac]||''}${r.age}d</td>
+        <td>${r.issue}</td>
+        <td>${r.payer}</td>
+        <td style="font-family:monospace;font-size:12px;color:var(--text-2)">${r.claim}</td>
+        <td class="r" style="font-weight:600">$${r.bal.toLocaleString()}</td>
+        <td>${statusBadge(r.status)}</td>
+        <td style="font-size:12.5px">${r.owner}</td>
+      </tr>`).join('');
+  }
+
+  ['flt-issue','flt-payer','flt-status','flt-owner'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change',()=>{
+      const issue  = document.getElementById('flt-issue').value;
+      const payer  = document.getElementById('flt-payer').value;
+      const status = document.getElementById('flt-status').value;
+      const owner  = document.getElementById('flt-owner').value;
+      const filtered = CLAIMS.filter(r=>
+        (!issue  || r.issue.toLowerCase().includes(issue.toLowerCase())) &&
+        (!payer  || r.payer===payer) &&
+        (!status || r.status.toLowerCase().includes(status.toLowerCase())) &&
+        (!owner  || r.owner===owner)
+      );
+      renderClaimsTable(filtered);
+    });
+  });
+}
+
+function buildRcmAr() {
+  if (_inited.has('rcm-ar')) return; _inited.add('rcm-ar');
+  mk('ch-ar-payer','bar',{
+    labels:['Medicare','Medi-Cal','Blue Shield','UHC','Aetna','Anthem','Patient'],
+    datasets:[{...bar('#4F46E5',[148300,112450,67890,52340,28760,21540,21540],'A/R Balance'),borderRadius:4}]
+  },{indexAxis:'y',
+    scales:{
+      x:{beginAtZero:true,ticks:{font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'}},
+      y:{ticks:{font:{size:11}},grid:{display:false}}
+    },plugins:{tooltip:{callbacks:{label:c=>`$${c.parsed.x.toLocaleString()}`}}}
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+try { initChartsFor('overview'); } catch(e) { console.error('[init] overview charts failed:', e); }
+
+// ── CALLS PAGE ────────────────────────────────────────────────────
+const CALLS_DATA_URL    = 'https://lenity-stratus-state.s3.us-west-2.amazonaws.com/stratus/dashboard/calls_data.json';
+const CALLS_SUMMARY_URL = 'https://lenity-stratus-state.s3.us-west-2.amazonaws.com/stratus/dashboard/calls_summary.json';
+const NC_LIST_BASE_URL  = 'https://api.lenity.health/nc-list'; // Lambda endpoint — set after deploy
+
+let CALLS_SUMMARY = null;
+let CALLS_DATA    = null;
+
+// Fetch live call data and initialise the calls page
+(async () => {
+  try {
+    const [dr, sr] = await Promise.all([
+      fetch(CALLS_DATA_URL),
+      fetch(CALLS_SUMMARY_URL),
+    ]);
+    if (!dr.ok || !sr.ok) throw new Error('HTTP ' + dr.status);
+    CALLS_DATA    = await dr.json();
+    CALLS_SUMMARY = await sr.json();
+    _callsLoaded  = true;
+    buildDateTabs();
+    if (_callsBuilt) {
+      buildMonthSummary();
+      buildTrendChart();
+      renderCallsForDate(_callsActiveDate);
+    }
+  } catch(e) {
+    console.error('[calls] fetch failed:', e);
+    const tabs = document.getElementById('calls-date-tabs');
+    if (tabs) tabs.innerHTML = '<span style="color:var(--red);font-size:12px">Failed to load call data. Check console.</span>';
+  }
+})();
+
+let _callsLoaded = false;
+
+function buildDateTabs() {
+  if (!CALLS_DATA) return;
+  const dates  = Object.keys(CALLS_DATA).sort();
+  _callsActiveDate = dates[dates.length - 1]; // most recent
+  const container  = document.getElementById('calls-date-tabs');
+  if (!container) return;
+  const label = container.querySelector('#c-date-label');
+  container.innerHTML = '';
+  dates.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className   = 'calls-date-tab chip ' + (d === _callsActiveDate ? 'chip-accent active' : 'chip-gray');
+    btn.dataset.date = d;
+    btn.textContent  = CALLS_DATA[d].label;
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.calls-date-tab').forEach(b => { b.classList.remove('active','chip-accent'); b.classList.add('chip-gray'); });
+      btn.classList.remove('chip-gray'); btn.classList.add('chip-accent','active');
+      _callsActiveDate = d;
+      renderCallsForDate(d);
+    });
+    container.appendChild(btn);
+  });
+  const sp = document.createElement('span');
+  sp.style.cssText = 'margin-left:auto;font-size:11px;color:var(--text-3)';
+  sp.id = 'c-date-label';
+  container.appendChild(sp);
+
+  // Wire filters and export (now that tabs exist)
+  const lf = document.getElementById('calls-lang-filter');
+  const sf = document.getElementById('calls-status-filter');
+  const eb = document.getElementById('calls-export-btn');
+  if (lf) lf.addEventListener('change', () => renderNcTable(_callsActiveDate));
+  if (sf) sf.addEventListener('change', () => renderNcTable(_callsActiveDate));
+  if (eb) eb.addEventListener('click', () => exportNcCsv(_callsActiveDate));
+}
+
+function buildCalls() {
+  try {
+    _callsBuilt = true;
+    if (_callsLoaded) {
+      buildMonthSummary();
+      buildTrendChart();
+      renderCallsForDate(_callsActiveDate);
+    }
+    // If data not yet loaded, the fetch promise will call these when it resolves
+  } catch(e) {
+    console.error('[buildCalls] ERROR:', e);
+  }
+}
+
+function buildMonthSummary() {
+  const s = CALLS_SUMMARY;
+  document.getElementById('ms-total').textContent     = s.total.toLocaleString();
+  document.getElementById('ms-rate').textContent      = s.connection_rate + '%';
+  document.getElementById('ms-nc').textContent        = s.nc.toLocaleString();
+  document.getElementById('ms-ob').textContent        = s.ob_total.toLocaleString();
+  document.getElementById('ms-callbacks').textContent = s.callbacks + ' (' + s.callback_rate + '%)';
+}
+
+function buildTrendChart() {
+  const dates  = Object.keys(CALLS_DATA).sort();
+  const labels = dates.map(d => CALLS_DATA[d].label);
+  const rates  = dates.map(d => CALLS_DATA[d].connection_rate);
+  const ncs    = dates.map(d => CALLS_DATA[d].nc);
+  if (_callsCharts.trend) _callsCharts.trend.destroy();
+  const el = document.getElementById('ch-calls-trend');
+  if (!el) return;
+  _callsCharts.trend = new Chart(el, {
+    data: { labels, datasets: [
+      { type:'line', label:'Connection Rate', data:rates, borderColor:'#059669',
+        backgroundColor:'rgba(5,150,105,.08)', fill:true, borderWidth:2,
+        tension:.35, pointRadius:3, pointHoverRadius:5, yAxisID:'y1', order:1 },
+      { type:'bar', label:'Never Connected', data:ncs,
+        backgroundColor:'rgba(220,38,38,.45)', borderRadius:3, yAxisID:'y2', order:2 }
+    ]},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      scales:{
+        y1:{ position:'left', min:60, max:100, ticks:{ callback:v=>v+'%', font:{size:10} }, grid:{color:'rgba(0,0,0,.05)'} },
+        y2:{ position:'right', beginAtZero:true, grid:{display:false}, ticks:{font:{size:10}} },
+        x: { ticks:{font:{size:10}}, grid:{display:false} }
+      },
+      plugins:{
+        legend:{ position:'top', labels:{font:{size:11}, boxWidth:12, padding:12} },
+        tooltip:{ callbacks:{ label:c => c.dataset.type==='line' ? c.raw+'% connected' : c.raw+' NC' } }
+      }
+    }
+  });
+}
+
+function renderCallsForDate(date) {
+  const d = CALLS_DATA && CALLS_DATA[date];
+  if (!d) return;
+
+  document.getElementById('c-date-label').textContent = d.label + ' · ' + d.weekday;
+
+  const rateEl = document.getElementById('c-rate');
+  rateEl.textContent = d.connection_rate + '%';
+  rateEl.style.color = d.connection_rate >= 85 ? 'var(--green)' : d.connection_rate >= 75 ? 'var(--amber)' : 'var(--red)';
+  document.getElementById('c-total').textContent = d.total;
+  document.getElementById('c-nc').textContent    = d.nc;
+  document.getElementById('c-sp').textContent    = d.spanish_nc;
+  document.getElementById('c-vm').textContent    = d.outcomes.VM || 0;
+
+  const obRate = d.ob_total > 0 ? Math.round(d.ob_connected / d.ob_total * 100) : 0;
+  document.getElementById('c-ob').textContent      = d.ob_total;
+  document.getElementById('c-ob-uniq').textContent = d.ob_unique;
+  const obRateEl = document.getElementById('c-ob-rate');
+  obRateEl.textContent = obRate + '%';
+  obRateEl.style.color = obRate >= 85 ? 'var(--green)' : obRate >= 70 ? 'var(--amber)' : 'var(--red)';
+  document.getElementById('c-callbacks').textContent = d.callbacks;
+  const cbRate = d.nc > 0 ? Math.round(d.callbacks / d.nc * 100) : 0;
+  document.getElementById('c-cb-rate').textContent = cbRate + '% of today's NC';
+
+  const shiftKeys = ['Morning', 'Afternoon', 'After Hours'];
+  const shiftVals = shiftKeys.map(k => d.shifts[k] || 0);
+  if (_callsCharts.shift) _callsCharts.shift.destroy();
+  _callsCharts.shift = mk('ch-calls-shift', 'bar', {
+    labels:shiftKeys,
+    datasets:[{ label:'Never-Connected', data:shiftVals,
+      backgroundColor:shiftVals.map(v => v >= 8 ? 'rgba(220,38,38,.75)' : v >= 5 ? 'rgba(217,119,6,.75)' : 'rgba(79,70,229,.65)'),
+      borderRadius:5 }]
+  }, { scales:{ y:{beginAtZero:true,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},
+    x:{ticks:{font:{size:11}},grid:{display:false}} },
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.parsed.y} callers`}}} });
+
+  const oKeys   = ['Answered','VM','IVR','Queue','Other'];
+  const oColors = ['#059669','#4F46E5','#0F766E','#7C3AED','#94A3B8'];
+  const oVals   = oKeys.map(k => d.outcomes[k] || 0);
+  if (_callsCharts.outcome) _callsCharts.outcome.destroy();
+  _callsCharts.outcome = mk('ch-calls-outcome', 'doughnut', {
+    labels:['Answered','Voicemail','IVR only','Queue only','Other'],
+    datasets:[{ data:oVals, backgroundColor:oColors, borderWidth:2, hoverOffset:6 }]
+  }, { cutout:'65%', plugins:{ legend:{ position:'right', labels:{font:{size:11},boxWidth:12,padding:10} } } });
+
+  renderNcTable(date);
+}
+
+let _ncCache = {};
+
+async function renderNcTable(date) {
+  const tbody = document.getElementById('calls-nc-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:16px">Loading NC list…</td></tr>`;
+  let ncList = _ncCache[date];
+  if (!ncList) {
+    try {
+      const res = await fetch(`${NC_LIST_BASE_URL}?date=${date}`);
+      if (!res.ok) throw new Error(res.status);
+      ncList = await res.json();
+      _ncCache[date] = ncList;
+    } catch(e) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:16px">NC list unavailable — contact admin</td></tr>`;
+      return;
+    }
+  }
+  const lang   = document.getElementById('calls-lang-filter').value;
+  const status = document.getElementById('calls-status-filter').value;
+  const rows   = ncList.filter(r =>
+    (!lang   || r.Language === lang) &&
+    (!status || r.Status === status)
+  );
+  tbody.innerHTML = rows.length ? rows.map(r => `
+    <tr>
+      <td>${r.Phone}</td>
+      <td>${r.Caller_Name || '—'}</td>
+      <td><span style="font-size:11px;font-weight:600;color:${r.Language==='Spanish'?'var(--purple)':'var(--text-3)'}">${r.Language}</span></td>
+      <td>${r.First_Seen}</td>
+      <td class="r">${r.Total_Attempts}</td>
+      <td><span style="font-size:11px;font-weight:600;color:${r.Status==='IVR'?'var(--teal)':r.Status==='Queue'?'var(--amber)':'var(--text-3)'}">${r.Status}</span></td>
+    </tr>`).join('') :
+    `<tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:20px">No records match filter</td></tr>`;
+}
+
+async function exportNcCsv(date) {
+  let ncList = _ncCache[date];
+  if (!ncList) {
+    try {
+      const res = await fetch(`${NC_LIST_BASE_URL}?date=${date}`);
+      ncList = await res.json();
+      _ncCache[date] = ncList;
+    } catch(e) { alert('NC list unavailable for export'); return; }
+  }
+  const lang   = document.getElementById('calls-lang-filter').value;
+  const status = document.getElementById('calls-status-filter').value;
+  const rows   = ncList.filter(r =>
+    (!lang   || r.Language === lang) &&
+    (!status || r.Status === status)
+  );
+  const lines = ['Phone,Caller Name,Language,First Seen,Attempts,Status'];
+  rows.forEach(r => lines.push([r.Phone, r.Caller_Name||'', r.Language, r.First_Seen, r.Total_Attempts, r.Status].join(',')));
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `nc-callers-${date}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+</script>
