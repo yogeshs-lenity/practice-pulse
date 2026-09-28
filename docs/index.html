@@ -1234,9 +1234,8 @@ function buildOverview() {
     ]
   },{
     scales:{
-      x:{ticks:{maxRotation:0,font:{size:9},callback:(_,i)=>(i%7===2)?DAYS[i]:''},grid:{display:false}},
+      x:{stacked:true,ticks:{maxRotation:0,font:{size:9},callback:(_,i)=>(i%7===2)?DAYS[i]:''},grid:{display:false}},
       y:{stacked:true,ticks:{font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'},beginAtZero:true},
-      x:{stacked:true}
     },
     plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: $${c.parsed.y.toLocaleString()}`}},
       legend:{display:true,position:'top',labels:{font:{size:11},usePointStyle:true,pointStyleWidth:8}}}
@@ -1574,7 +1573,7 @@ function renderCallsForDate(date) {
   obRateEl.style.color = obRate >= 85 ? 'var(--green)' : obRate >= 70 ? 'var(--amber)' : 'var(--red)';
   document.getElementById('c-callbacks').textContent = d.callbacks;
   const cbRate = d.nc > 0 ? Math.round(d.callbacks / d.nc * 100) : 0;
-  document.getElementById('c-cb-rate').textContent = cbRate + '% of today's NC';
+  document.getElementById('c-cb-rate').textContent = cbRate + "% of today’s NC";
 
   const shiftKeys = ['Morning', 'Afternoon', 'After Hours'];
   const shiftVals = shiftKeys.map(k => d.shifts[k] || 0);

@@ -186,23 +186,23 @@ def main():
     data, summary, nc_by_date = process(tmp_path)
     print(f'  {summary["days"]} business days  |  {summary["total"]} inbound  |  {summary["nc"]} NC  |  {summary["ob_total"]} outbound')
 
-    # Write public JSON (no PHI) to frontend/data/ for GitHub Pages
+    # Write public JSON (no PHI) to docs/data/ for GitHub Pages
     repo_root = Path(__file__).parent.parent
-    data_dir  = repo_root / 'frontend' / 'data'
+    data_dir  = repo_root / 'docs' / 'data'
     data_dir.mkdir(parents=True, exist_ok=True)
 
     (data_dir / 'calls_data.json').write_text(json.dumps(data, separators=(',', ':')))
-    print(f'  wrote → frontend/data/calls_data.json')
+    print(f'  wrote → docs/data/calls_data.json')
 
     (data_dir / 'calls_summary.json').write_text(json.dumps(summary, separators=(',', ':')))
-    print(f'  wrote → frontend/data/calls_summary.json')
+    print(f'  wrote → docs/data/calls_summary.json')
 
     # Private: per-date NC lists (contain phone numbers / names) → S3 only
     for ds, nc_list in nc_by_date.items():
         body = json.dumps(nc_list, separators=(',', ':'))
         upload_private(s3, body, f'{S3_DASH_PREFIX}/nc/nc_{ds}.json')
 
-    print(f'\nNext: git add frontend/data/ && git commit -m "data: refresh call analytics" && git push')
+    print(f'\nNext: git add docs/data/ && git commit -m "data: refresh call analytics" && git push')
     os.unlink(tmp_path)
 
 if __name__ == '__main__':
